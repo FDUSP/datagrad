@@ -1,0 +1,50 @@
+version: '3.9'
+
+networks:
+  datagrad:
+    driver: bridge
+  outhernet:
+    external: true
+    name: intra-compose
+
+x-app: &app
+  networks:
+    - datagrad
+    - outhernet
+  deploy:
+    resources:
+      limits:
+        cpus: '4'
+        memory: 8192m
+
+services:
+  proxy:
+    container_name: datagrad-proxy
+    image: nginx:1.29.1-alpine
+    depends_on:
+      - webapp
+    ports:
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
+    volumes:
+      - ./docker/proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/proxy/sites-enabled:/etc/nginx/sites-enabled:ro
+      - ./docker/proxy/certs:/etc/nginx/conf.d:ro
+    <<: *app
+
+  webapp:
+    container_name: datagrad-webapp
+    build:
+      context: .
+      dockerfile: ./docker/datagrad/Dockerfile
+    entrypoint: ["./docker/datagrad/datagrad-entrypoint.sh"]
+    command: ["apache2-foreground"]
+    # ports:
+    #   - "127.0.0.1:8080:8080"
+    env_file:
+      - .env/development/datagrad
+    volumes:
+      - ./storage:/var/www/html/storage
+    <<: *app
+
+
