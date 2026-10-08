@@ -29,7 +29,7 @@ class RoleController extends Controller
 
         $roleCG = Role::where('name', 'CG')->first();
         $roleCC = Role::where('name', 'CC')->first();
-        $roleBiblioteca = Role::where('name', 'Biblioteca')->first();
+        $roleBiblioteca = Role::where('name', 'biblioteca')->first();
         $departamentos = [];
 
         // cria as permissions referentes aos departamentos no formato disciplinas_xxx,
